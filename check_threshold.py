@@ -1,8 +1,14 @@
 import sys
-accuracy = 0.80
+
+accuracy = 0.90 
+
+print(f"--- Pipeline Quality Check ---")
+print(f"Current Accuracy: {accuracy}")
+print(f"Threshold Required: 0.85")
+
 if accuracy < 0.85:
-    print("Failed: Accuracy below threshold")
+    print("RESULT: FAILED - Accuracy is below threshold!")
     sys.exit(1)
 else:
-    print("Success: Accuracy above threshold")
+    print("RESULT: SUCCESS - Accuracy meets requirements.")
     sys.exit(0)
