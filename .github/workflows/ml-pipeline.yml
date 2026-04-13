@@ -1,39 +1,58 @@
-name: ML Model CI
+name: Smart ML Pipeline
 
 on:
   push:
-    branches: ["main"] 
-  pull_request:
-    branches: ["main"]
+    branches:
+      - "*"
 
 jobs:
-  validate-and-test:
+
+
+  linter:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Linter Check
+      - name: Run Linter
         run: |
           pip install flake8
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          flake8 .
 
-      - name: Model Dry Test
+  
+  train:
+    needs: linter
+    runs-on: ubuntu-latest
+
+    if: >
+      github.ref == 'refs/heads/main' &&
+      contains(github.event.head_commit.message, '[run-train]')
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Training
         run: |
-          python -c "import torch; print('Model environment ready!')"
+          echo "Training model..."
+          python script.py
 
-      - name: Upload README Artifact
+    
+      - name: Handle Failure
+        if: failure()
+        run: |
+          echo "Training failed. Check logs." > error_logs.txt
+
+      - name: Upload Error Logs
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: project-doc
-          path: README.md
+          name: error-logs
+          path: error_logs.txt
+
+
+      - name: Cleanup
+        if: always()
+        run: echo "Cleaning up temporary cloud volumes..."
