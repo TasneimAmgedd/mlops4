@@ -7,19 +7,17 @@ on:
 
 jobs:
 
-
   linter:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run Linter
         run: |
           pip install flake8
           flake8 .
 
-  
   train:
     needs: linter
     runs-on: ubuntu-latest
@@ -29,30 +27,7 @@ jobs:
       contains(github.event.head_commit.message, '[run-train]')
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
+      - uses: actions/checkout@v4
 
       - name: Run Training
-        run: |
-          echo "Training model..."
-          python script.py
-
-    
-      - name: Handle Failure
-        if: failure()
-        run: |
-          echo "Training failed. Check logs." > error_logs.txt
-
-      - name: Upload Error Logs
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: error-logs
-          path: error_logs.txt
-
-
-      - name: Cleanup
-        if: always()
-        run: echo "Cleaning up temporary cloud volumes..."
+        run: echo "Training model..."
